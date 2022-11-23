@@ -11,7 +11,6 @@ app.set("view engine", "ejs");
 app.use(morgan("dev")); // for logging
 app.use(express.json()); // read body type json
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
 
 app.use(router);
 
@@ -31,6 +30,6 @@ app.use((err, req, res, next) => {
   });
 });
 
-// const { HTTP_PORT } = process.env;
-// app.listen(HTTP_PORT, () => console.log(`Listening on port ${HTTP_PORT}`));
-module.exports = app;
+const { HTTP_PORT } = process.env;
+app.listen(HTTP_PORT, () => console.log(`Listening on port ${HTTP_PORT}`));
+// module.exports = app;
