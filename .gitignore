@@ -1,4 +1,5 @@
 .env
 node_modules
+tests
+jest.config.js
 coverage
-utlis/truncate.js
