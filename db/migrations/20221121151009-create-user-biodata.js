@@ -11,20 +11,23 @@ module.exports = {
       user_id: {
         type: Sequelize.INTEGER,
       },
-      username: {
-        type: Sequelize.STRING,
-      },
       firstName: {
         type: Sequelize.STRING,
       },
       lastName: {
         type: Sequelize.STRING,
       },
+      gender: {
+        type: Sequelize.STRING
+      },
       phoneNumber: {
         type: Sequelize.STRING,
       },
-      avatar: {
+      address: {
         type: Sequelize.STRING,
+      },
+      nationality: {
+        type: Sequelize.TEXT
       },
       createdAt: {
         allowNull: false,
