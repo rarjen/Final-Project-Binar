@@ -1,4 +1,4 @@
-const { User, Role } = require("../../models");
+const { User, Role, Avatar } = require("../../models");
 const sendEmail = require("../../utils/mailer/sendEmail");
 const templateHtml = require("../../utils/mailer/templateHtml");
 const bcrypt = require("bcrypt");
@@ -13,7 +13,7 @@ const sendingEmail = async (email) => {
     email: email,
   };
   const token = jwt.sign(payload, JWT_SECRET_KEY, { expiresIn: "900s" });
-  const link = `http://localhost:3000/auth/verify?token=${token}`;
+  const link = `https://petikcom-api-dev.km3ggwp.com/auth/verify?token=${token}`;
   const htmlEmail = await templateHtml("verify-email.ejs", {
     email: email,
     link: link,
@@ -24,7 +24,6 @@ const sendingEmail = async (email) => {
 const register = async (req, res, next) => {
   try {
     const {
-      username,
       email,
       password,
       confirm_password,
@@ -33,14 +32,12 @@ const register = async (req, res, next) => {
     } = req.body;
 
     const schema = {
-      username: { type: "string" },
       email: { type: "email", label: "Email Address" },
       password: { type: "string", min: 6 },
     };
     const check = await v.compile(schema);
 
     const validate = check({
-      username: `${username}`,
       email: `${email}`,
       password: `${password}`,
     });
@@ -64,7 +61,7 @@ const register = async (req, res, next) => {
 
     // check user exist
     const userExist = await User.findOne({
-      where: { [Op.or]: [{ email: email }, { username: username }] },
+      where: { email },
     });
 
     if (userExist) {
@@ -83,7 +80,7 @@ const register = async (req, res, next) => {
 
       return res.status(400).json({
         status: false,
-        message: "Email / username already used!",
+        message: "Email already used!",
         data: null,
       });
     }
@@ -96,7 +93,6 @@ const register = async (req, res, next) => {
 
     //create new user
     const newUser = await User.create({
-      username,
       email,
       password: passwordHashed,
       role_id: userRole.id,
@@ -105,12 +101,19 @@ const register = async (req, res, next) => {
       isActive,
     });
 
+    const insertAvatar = await Avatar.create({
+      user_id: newUser.id,
+      avatar:
+        "https://ik.imagekit.io/6v306xm58/user_default.jpg?ik-sdk-version=javascript-1.4.3&updatedAt=1669853887793",
+    });
+
     sendingEmail(newUser.email);
     return res.status(201).json({
       status: true,
       message: "Register Success!",
       data: {
         email: newUser.email,
+        avatar: insertAvatar,
       },
     });
   } catch (error) {

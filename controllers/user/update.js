@@ -1,69 +1,69 @@
 const { User, UserBiodata } = require("../../models");
 const Validator = require("fastest-validator");
-const v = new Validator();
+const v = new Validator({
+  useNewCustomCheckerFunction: true, // using new version
+  messages: {
+    // Register our new error message text
+    phoneNumber: "The phone number must be started with '+'!",
+  },
+});
 
-const updateUser = async (req, res, next) => {
+const updateBio = async (req, res, next) => {
   try {
-    const user = req.user
-    const {
-      username,
-      firstName,
-      lastName,
-      phoneNumber
-    } = req.body;
+    const user = req.user;
+    const { firstName, lastName, gender, phoneNumber, address, nationality } =
+      req.body;
 
     const schema = {
-      username: { type: "string" },
       firstName: { type: "string" },
       lastName: { type: "string" },
-      phoneNumber: { type: "string", min: 12 }
+      gender: { type: "string" },
+      phoneNumber: {
+        type: "string",
+        min: 12,
+        custom: (v, err) => {
+          if (!v.startsWith("+")) err.push({ type: "phoneNumber" });
+          return v.replace(/[^\d+]/g, ""); // Sanitize: remove all special chars except numbers
+        },
+      },
+      address: { type: "string" },
+      nationality: { type: "string" },
     };
     const check = await v.compile(schema);
 
     const validate = check({
-      username: `${username}`,
       firstName: `${firstName}`,
       lastName: `${lastName}`,
-      phoneNumber: `${phoneNumber}`
+      gender: `${gender}`,
+      phoneNumber: `${phoneNumber}`,
+      address: `${address}`,
+      nationality: `${nationality}`,
     });
 
     if (validate.length > 0) {
       return res.status(400).json({
         status: false,
-        message: "Must be String / Phone Number at least 12 digit",
+        message: "Must be String / The phone number must be started with '+'!",
         data: null,
       });
     }
 
-    const usernameExist = await User.findAll({ where: { username } })
-    if (usernameExist.length > 1) {
-      return res.status(400).json({
-        status: false,
-        message: "Username already exist!",
-        data: null
-      })
-    }
-
-    await User.update(
-      { username },
-      { where: { id: user.id } }
-    )
     await UserBiodata.update(
-      { firstName, lastName, phoneNumber },
+      { firstName, lastName, gender, phoneNumber, address, nationality },
       { where: { user_id: user.id } }
-    )
+    );
 
     return res.status(201).json({
       status: true,
       message: "Success update user!",
       data: {
         id: user.id,
-        email: user.email
-      }
-    })
+        email: user.email,
+      },
+    });
   } catch (err) {
-    next(err)
+    next(err);
   }
-}
+};
 
-module.exports = updateUser
+module.exports = updateBio;
