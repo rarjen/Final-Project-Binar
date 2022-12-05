@@ -64,14 +64,16 @@ paths:
                     status: false
                     message: Your account is already used
                     data: null
-      operationId: auth-login-google
-      parameters:
-        - schema:
-            type: string
-          in: query
-          name: access_token
-          description: access token from Front End
-          required: true
+      requestBody: 
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                access_token:
+                  type: string
+              required:
+                - access_token
   /auth/register:
     post:
       summary: Register
@@ -1074,6 +1076,8 @@ paths:
   /user/upload-avatar:
     put:
       summary: Upload User Avatar
+      tags:
+        - User
       responses:
         "200":
           description: OK
@@ -1129,6 +1133,8 @@ paths:
   /user/delete-avatar:
     put:
       summary: Delete User Avatar
+      tags:
+        - User
       responses:
         "200":
           description: OK
